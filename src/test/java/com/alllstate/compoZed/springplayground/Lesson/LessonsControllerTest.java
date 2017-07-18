@@ -15,9 +15,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.web.bind.annotation.RestController;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 
 import static org.hamcrest.Matchers.is;
@@ -50,10 +48,10 @@ public class LessonsControllerTest {
     public void createDelegateToRepository() throws Exception{
 
         when(repository.save(any(LessonModel.class))).then(returnsFirstArg());
-        final MockHttpServletRequestBuilder post = post("/lessons")
+        final MockHttpServletRequestBuilder makeNewLesson = post("/lessons")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\": \"Mock another one\"}");
-        final ResultActions resultActions = mockMvc.perform(post);
+        final ResultActions resultActions = mockMvc.perform(makeNewLesson);
                 resultActions.andExpect(status().isOk())
                         .andExpect(jsonPath("$.title", is("Mock another one")));
 
@@ -62,17 +60,29 @@ public class LessonsControllerTest {
     }
 
 
-    //test if return a list of lessonModel
+  //  test if return a list of lessonModel
     @Test
     public void getDelegateToRepository() throws Exception{
+//        array = [lesson1, lesson2, ...]
+        LessonModel lesson1 = new LessonModel();
+        LessonModel lesson2 = new LessonModel();
+        Long id1 = new Random().nextLong();
+        Long id2 = new Random().nextLong();
+        lesson1.setId(id1);
+        lesson2.setId(id2);
+        lesson1.setTitle("title one");
+        lesson2.setTitle("title two");
 
-        when(this.repository.save(any(LessonModel.class))).then(returnsFirstArg());
-        final MockHttpServletRequestBuilder update = get("/lessons")
-                .contentType(MediaType.APPLICATION_JSON).content("{\"title\": \"Mock another one\"}");
-        final ResultActions res = mockMvc.perform(update)
+        when(repository.findAll()).thenReturn(Arrays.asList(lesson1, lesson2));
+
+        final MockHttpServletRequestBuilder allLessons = get("/lessons");
+//                .contentType(MediaType.APPLICATION_JSON).content("{\"title\": \"Mock another one\"}");
+        final ResultActions res = mockMvc.perform(allLessons)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title",is("Mock another one")));
-        verify(repository).save(any(LessonModel.class));
+                .andExpect(jsonPath("$[0].title",is("title one")))
+                .andExpect(jsonPath("$[1].id",is(id2)));
+
+        verify(repository).findAll();
     }
 
 }
