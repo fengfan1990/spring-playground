@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 //import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -106,7 +107,7 @@ public class LessonsControllerTest {
 
     @Test
     public void readLessonWithOneRepository() throws Exception{
-//        array = [lesson1, lesson2, ...]
+
         LessonModel lesson1 = new LessonModel();
         LessonModel lesson2 = new LessonModel();
         Long id1 = new Random().nextLong();
@@ -119,7 +120,6 @@ public class LessonsControllerTest {
         when(repository.findOne(1L)).thenReturn((lesson1));
 
         final MockHttpServletRequestBuilder oneLessons = get("/lessons/1");
-//                .contentType(MediaType.APPLICATION_JSON).content("{\"title\": \"Mock another one\"}");
         final ResultActions res = mockMvc.perform(oneLessons)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title",is("title one")))
@@ -133,18 +133,12 @@ public class LessonsControllerTest {
     @Test
     public void updateLessonRepository() throws Exception {
         LessonModel lesson1 = new LessonModel();
-        LessonModel lesson2 = new LessonModel();
-        LessonModel lesson3 = new LessonModel();
         Long id1 = new Random().nextLong();
-        Long id2 = new Random().nextLong();
         lesson1.setId(id1);
-        lesson2.setId(id2);
         lesson1.setTitle("title one");
-        lesson2.setTitle("title two");
 
         when(repository.findOne(1L)).thenReturn(lesson1);
         when(repository.save(lesson1)).thenReturn(lesson1);
-
 
 
         final MockHttpServletRequestBuilder updateLessonModel = put("/lessons/update/1")
@@ -154,10 +148,32 @@ public class LessonsControllerTest {
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.title", is("Final Update")));
-
-
     }
 
     //delete-> delete /lessons/{ID}
+    @Test
+    public void deleteSingleLessonRepositoryItem() throws Exception {
+        LessonModel lesson1 = new LessonModel();
+        Long id1 = new Random().nextLong();
+        lesson1.setId(id1);
+        lesson1.setTitle("title one");
+
+        when(repository.findOne(1L)).thenReturn(lesson1);
+
+
+        final MockHttpServletRequestBuilder updateLessonModel = delete("/lessons/delete/1");
+
+        final ResultActions result = mockMvc.perform(updateLessonModel);
+
+
+
+        verify(repository).delete(1L);
+        //  if 404 we cannot find it
+        // verifyNoMoreInteractions(repository);
+
+        //verify(repository).exists(id1);
+    }
+
+
     //list->   get /lessons
 }

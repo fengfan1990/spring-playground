@@ -41,5 +41,15 @@ import org.springframework.web.bind.annotation.*;
         }
         return lessonModel;
     }
+
+    @DeleteMapping("/delete/{id}")
+    public void delete(@PathVariable long id){
+        if(repository.findOne(id) != null){
+            repository.delete(id);
+        }
+
+    }
+
+
 }
 
